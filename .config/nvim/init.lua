@@ -1,30 +1,35 @@
 local fn = vim.fn
-
-local install_path = fn.stdpath('data') .. '/site/pack/paqs/start/paq-nvim'
-
-if fn.empty(fn.glob(install_path)) > 0 then
-  fn.system({'git', 'clone', '--depth=1', 'https://github.com/savq/paq-nvim.git', install_path})
+if vim.loop.os_uname().sysname == "Darwin"
+then
+  print("mac use paq-nvim")
+  
+  local install_path = fn.stdpath('data') .. '/site/pack/paqs/start/paq-nvim'
+  
+  if fn.empty(fn.glob(install_path)) > 0 then
+    fn.system({'git', 'clone', '--depth=1', 'https://github.com/savq/paq-nvim.git', install_path})
+  end
+  
+  require "paq" {
+      "savq/paq-nvim";                  -- Let Paq manage itself
+  
+      "neovim/nvim-lspconfig";          -- Mind the semi-colons
+      "nvim-lua/completion-nvim";
+      "hrsh7th/nvim-cmp";
+      "kabouzeid/nvim-lspinstall";
+    
+      "preservim/nerdtree";
+      "nvim-treesitter/nvim-treesitter";
+      "sheerun/vim-polyglot";
+      "tjdevries/colorbuddy.nvim";
+      "tjdevries/gruvbuddy.nvim";
+    
+      "Olical/conjure";
+      "nvim-telescope/telescope.nvim";
+  }
+else
+  print("linux use packer")
+  require('plugins')
 end
-
-require "paq" {
-    "savq/paq-nvim";                  -- Let Paq manage itself
-
-    "neovim/nvim-lspconfig";          -- Mind the semi-colons
-    "nvim-lua/completion-nvim";
-    "hrsh7th/nvim-cmp";
-    "kabouzeid/nvim-lspinstall";
-  
-    "preservim/nerdtree";
-    {"lervag/vimtex", opt=true};      -- Use braces when passing options
-
-    "nvim-treesitter/nvim-treesitter";
-    "sheerun/vim-polyglot";
-    "tjdevries/colorbuddy.nvim";
-    "tjdevries/gruvbuddy.nvim";
-  
-    "Olical/conjure";
-    "nvim-telescope/telescope.nvim";
-}
 
 vim.o.termguicolors = true
 vim.o.syntax = 'on'
@@ -137,3 +142,10 @@ local servers = require'lspinstall'.installed_servers()
 for _, server in pairs(servers) do
   require'lspconfig'[server].setup(default_config)
 end
+
+-- Using Lua functions
+key_mapper('n', '<c-p>', ':Telescope find_files<CR>')
+key_mapper('n', '<leader>ff', ':Telescope find_files<CR>')
+key_mapper('n', '<leader>fg', ':Telescope live_grep<CR>')
+key_mapper('n', '<leader>fb', ':Telescope buffers<CR>')
+key_mapper('n', '<leader>fh', ':Telescope help_tags<CR>')
