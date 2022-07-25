@@ -1,41 +1,18 @@
 local fn = vim.fn
-if vim.loop.os_uname().sysname == "Darwin"
-then
-  print("mac use paq-nvim")
-  
-  local install_path = fn.stdpath('data') .. '/site/pack/paqs/start/paq-nvim'
-  
-  if fn.empty(fn.glob(install_path)) > 0 then
-    fn.system({'git', 'clone', '--depth=1', 'https://github.com/savq/paq-nvim.git', install_path})
-  end
-  
-  require "paq" {
-      "savq/paq-nvim";                  -- Let Paq manage itself
-  
-      "neovim/nvim-lspconfig";          -- Mind the semi-colons
-      "nvim-lua/completion-nvim";
-      "hrsh7th/nvim-cmp";
-      "kabouzeid/nvim-lspinstall";
-    
-      "preservim/nerdtree";
-      "nvim-treesitter/nvim-treesitter";
-      "sheerun/vim-polyglot";
-      "tjdevries/colorbuddy.nvim";
-      "tjdevries/gruvbuddy.nvim";
-    
-      "Olical/conjure";
-      "nvim-telescope/telescope.nvim";
-  }
-else
-  print("linux use packer")
-  require('plugins')
+-- if vim.loop.os_uname().sysname == "Darwin"
+-- then
+
+local install_path = fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
+
+if fn.empty(fn.glob(install_path)) > 0 then
+fn.system({'git', 'clone', '--depth=1', 'https://github.com/wbthomason/packer.nvim', install_path})
 end
+
+require('plugins')
 
 vim.o.termguicolors = true
 vim.o.syntax = 'on'
-vim.o.errorbells = false
-vim.o.smartcase = true
-vim.o.showmode = false
+vim.o.errorbells = false vim.o.smartcase = true vim.o.showmode = false
 vim.bo.swapfile = false
 vim.o.backup = false
 vim.o.undodir = vim.fn.stdpath('config') .. '/undodir'
@@ -76,42 +53,96 @@ key_mapper('v', 'jK', '<ESC>')
 key_mapper('n', '<F6>', ':vsp ~/.config/nvim/init.lua<CR>')
 key_mapper('n', '<F7>', ':so %<CR>')
 key_mapper('n', '<F8>', ':NERDTreeToggle<CR>')
+key_mapper('n', '<F9>', ':vsp ~/.config/nvim/lua/plugins.lua<CR>')
 
-require('colorbuddy').colorscheme('gruvbuddy')
+-- color scheme
+vim.cmd [[colorscheme codedark]]
+-- vim.cmd [[colorscheme catppuccin]]
+-- require('colorbuddy').colorscheme('gruvbuddy')
 
-local configs = require'nvim-treesitter.configs'
-configs.setup {
-  ensure_installed = "maintained",
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  -- ignore_install = { "phpdoc" }, -- List of parsers to ignore installing
+  sync_install = false, -- install languages synchronously (only applied to `ensure_installed`)
+  autopairs = {
+		enable = true,
+  },
   highlight = {
+    enable = true, -- false will disable the whole extension
+    -- disable = { "ruby" }, -- list of language that will be disabled
+    additional_vim_regex_highlighting = true,
+  },
+  indent = {
     enable = true,
-  }
+  },
+  context_commentstring = {
+    enable = true
+  },
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = "gnn",
+      node_incremental = "grn",
+      scope_incremental = "grc",
+      node_decremental = "grm",
+    },
+  },
 }
 
 -- lsp setup
---
-local lspconfig = require'lspconfig'
-local completion = require'completion'
 
-local function custom_on_attach(client)
-  print('Attaching to ' .. client.name)
-  completion.on_attach()
-  key_mapper('n', '<leader>dn', 'vim.lsp.diagnostic.goto_next()')
-  key_mapper('n', '<leader>dp', 'vim.lsp.diagnostic.goto_prev()')
+require("nvim-lsp-installer").setup {}
+
+local lspconfig = require'lspconfig'
+-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+local opts = { noremap=true, silent=true }
+vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
+
+vim.keymap.set('n', '<space>o', ':ClangdSwitchSourceHeader<cr>', opts)
+
+local on_attach = function(client, bufnr)
+  -- print('Attaching to ' .. client.name)
+    -- Enable completion triggered by <c-x><c-o>
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+  local bufopts = { noremap=true, silent=true, buffer=bufnr }
+  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
+  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
+  vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
+  vim.keymap.set('n', 'gh', vim.lsp.buf.hover, bufopts)
+  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
+  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set('n', '<space>wl', function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, bufopts)
+  vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
+  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+  vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
 end
 
 local default_config = {
-  on_attach = custom_on_attach,
+  on_attach = on_attach;
 }
 
-lspconfig.ocamllsp.setup{
-  on_attach = custom_on_attach;
+lspconfig.ocamllsp.setup({
+  on_attach = on_attach;
   cmd = { "ocamllsp" };
-  filetypes = { "ocaml", "ocaml.menhir", "ocaml.interface", "ocaml.ocamllex", "reason" };
-  root_dir = function(fname)
-    return lspconfig.util.find_git_ancestor(fname) or vim.loop.os_homedir()
-  end;
+  -- root_dir = function(fname)
+  --   return lspconfig.util.find_git_ancestor(fname) or vim.loop.os_homedir()
+  -- end;
   settings = {};
-}
+})
+
+lspconfig.clangd.setup({
+  on_attach = on_attach;
+  cmd= {"clangd"}
+})
 
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
   vim.lsp.diagnostic.on_publish_diagnostics, {
@@ -122,30 +153,29 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
   }
 )
 
-key_mapper('n', 'gf', ':lua vim.lsp.buf.formatting()<CR>')
-key_mapper('n', 'gd', ':lua vim.lsp.buf.definition()<CR>')
-key_mapper('n', 'gD', ':lua vim.lsp.buf.declaration()<CR>')
-key_mapper('n', 'gi', ':lua vim.lsp.buf.implementation()<CR>')
-key_mapper('n', 'gw', ':lua vim.lsp.buf.document_symbol()<CR>')
-key_mapper('n', 'gW', ':lua vim.lsp.buf.workspace_symbol()<CR>')
-key_mapper('n', 'gr', ':lua vim.lsp.buf.references()<CR>')
-key_mapper('n', 'gt', ':lua vim.lsp.buf.type_definition()<CR>')
-key_mapper('n', 'K', ':lua vim.lsp.buf.hover()<CR>')
-key_mapper('n', 'gh', ':lua vim.lsp.buf.hover()<CR>')
-key_mapper('n', '<c-k>', ':lua vim.lsp.buf.signature_help()<CR>')
-key_mapper('n', '<leader>af', ':lua vim.lsp.buf.code_action()<CR>')
-key_mapper('n', '<leader>rn', ':lua vim.lsp.buf.rename()<CR>')
+require("lsp_signature").setup()
 
-require'lspinstall'.setup() -- important
-
-local servers = require'lspinstall'.installed_servers()
-for _, server in pairs(servers) do
-  require'lspconfig'[server].setup(default_config)
-end
-
+-- key_mapper('n', 'gf', ':lua vim.lsp.buf.formatting()<CR>')
+-- key_mapper('n', 'gd', ':lua vim.lsp.buf.definition()<CR>')
+-- key_mapper('n', 'gD', ':lua vim.lsp.buf.declaration()<CR>')
+-- key_mapper('n', 'gi', ':lua vim.lsp.buf.implementation()<CR>')
+-- key_mapper('n', 'gw', ':lua vim.lsp.buf.document_symbol()<CR>')
+-- key_mapper('n', 'gW', ':lua vim.lsp.buf.workspace_symbol()<CR>')
+-- key_mapper('n', 'gr', ':lua vim.lsp.buf.references()<CR>')
+-- key_mapper('n', 'gt', ':lua vim.lsp.buf.type_definition()<CR>')
+-- key_mapper('n', 'K', ':lua vim.lsp.buf.hover()<CR>')
+-- key_mapper('n', 'gh', ':lua vim.lsp.buf.hover()<CR>')
+-- key_mapper('n', '<c-k>', ':lua vim.lsp.buf.signature_help()<CR>')
+-- key_mapper('n', '<leader>af', ':lua vim.lsp.buf.code:_action()<CR>')
+-- key_mapper('n', '<leader>rn', ':lua vim.lsp.buf.rename()<CR>')
+-- 
 -- Using Lua functions
 key_mapper('n', '<c-p>', ':Telescope find_files<CR>')
 key_mapper('n', '<leader>ff', ':Telescope find_files<CR>')
 key_mapper('n', '<leader>fg', ':Telescope live_grep<CR>')
 key_mapper('n', '<leader>fb', ':Telescope buffers<CR>')
 key_mapper('n', '<leader>fh', ':Telescope help_tags<CR>')
+
+key_mapper('n', '<F12>',  '<Plug>(Luadev-RunLine)')
+
+-- ptyhon3 path
