@@ -54,6 +54,7 @@ key_mapper('n', '<F6>', ':vsp ~/.config/nvim/init.lua<CR>')
 key_mapper('n', '<F7>', ':so %<CR>')
 key_mapper('n', '<F8>', ':NERDTreeToggle<CR>')
 key_mapper('n', '<F9>', ':vsp ~/.config/nvim/lua/plugins.lua<CR>')
+-- key_mapper('i', '<C-space>', '<C-x><C-o>')
 
 -- color scheme
 vim.cmd [[colorscheme codedark]]
@@ -90,6 +91,11 @@ require'nvim-treesitter.configs'.setup {
 }
 
 -- lsp setup
+--
+-- lsp autocomplete
+--
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
 require("nvim-lsp-installer").setup {}
 
@@ -127,21 +133,21 @@ local on_attach = function(client, bufnr)
 end
 
 local default_config = {
-  on_attach = on_attach;
+  on_attach = on_attach,
+  capabilities = capabilities,
 }
 
 lspconfig.ocamllsp.setup({
-  on_attach = on_attach;
-  cmd = { "ocamllsp" };
-  -- root_dir = function(fname)
-  --   return lspconfig.util.find_git_ancestor(fname) or vim.loop.os_homedir()
-  -- end;
-  settings = {};
+  on_attach = on_attach,
+  cmd = { "ocamllsp" },
+  settings = {},
+  capabilities = capabilities,
 })
 
 lspconfig.clangd.setup({
-  on_attach = on_attach;
-  cmd= {"clangd"}
+  on_attach = on_attach,
+  cmd= {"clangd"},
+  capabilities = capabilities,
 })
 
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -152,6 +158,50 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     update_in_insert = true,
   }
 )
+
+-- luasnip setup
+local luasnip = require 'luasnip'
+
+-- nvim-cmp setup
+local cmp = require 'cmp'
+cmp.setup {
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
+  },
+  mapping = cmp.mapping.preset.insert({
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<CR>'] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = true,
+    },
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
+  }),
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'luasnip' },
+  },
+}
 
 require("lsp_signature").setup()
 
@@ -170,7 +220,7 @@ require("lsp_signature").setup()
 -- key_mapper('n', '<leader>rn', ':lua vim.lsp.buf.rename()<CR>')
 -- 
 -- Using Lua functions
-key_mapper('n', '<c-p>', ':Telescope find_files<CR>')
+key_mapper('n', '<c-p>', ':Telescope git_files<CR>')
 key_mapper('n', '<leader>ff', ':Telescope find_files<CR>')
 key_mapper('n', '<leader>fg', ':Telescope live_grep<CR>')
 key_mapper('n', '<leader>fb', ':Telescope buffers<CR>')
@@ -179,3 +229,6 @@ key_mapper('n', '<leader>fh', ':Telescope help_tags<CR>')
 key_mapper('n', '<F12>',  '<Plug>(Luadev-RunLine)')
 
 -- ptyhon3 path
+--
+
+
