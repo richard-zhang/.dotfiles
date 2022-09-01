@@ -46,4 +46,11 @@ return require('packer').startup(function()
   -- window management
   use "troydm/zoomwintab.vim"
   use "szw/vim-maximizer"
+  -- vim markdonw
+  use({
+    "iamcco/markdown-preview.nvim",
+    run = function() vim.fn["mkdp#util#install"]() end,
+  })
+
+  use 'godlygeek/tabular'
 end)

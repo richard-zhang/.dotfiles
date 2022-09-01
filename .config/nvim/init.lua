@@ -44,12 +44,12 @@ key_mapper('', '<up>', '<nop>')
 key_mapper('', '<down>', '<nop>')
 key_mapper('', '<left>', '<nop>')
 key_mapper('', '<right>', '<nop>')
-key_mapper('i', 'jk', '<ESC>')
-key_mapper('i', 'JK', '<ESC>')
-key_mapper('i', 'jK', '<ESC>')
-key_mapper('v', 'jk', '<ESC>')
-key_mapper('v', 'JK', '<ESC>')
-key_mapper('v', 'jK', '<ESC>')
+-- key_mapper('i', 'jk', '<ESC>')
+-- key_mapper('i', 'JK', '<ESC>')
+-- key_mapper('i', 'jK', '<ESC>')
+-- key_mapper('v', 'jk', '<ESC>')
+-- key_mapper('v', 'JK', '<ESC>')
+-- key_mapper('v', 'jK', '<ESC>')
 key_mapper('n', '<F6>', ':vsp ~/.config/nvim/init.lua<CR>')
 key_mapper('n', '<F7>', ':so %<CR>')
 key_mapper('n', '<F8>', ':NERDTreeToggle<CR>')
@@ -64,7 +64,7 @@ vim.cmd [[colorscheme codedark]]
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
-  -- ignore_install = { "phpdoc" }, -- List of parsers to ignore installing
+  ignore_install = { "phpdoc" }, -- List of parsers to ignore installing
   sync_install = false, -- install languages synchronously (only applied to `ensure_installed`)
   autopairs = {
 		enable = true,
@@ -142,6 +142,12 @@ local default_config = {
   on_attach = on_attach,
   capabilities = capabilities,
 }
+
+lspconfig.hls.setup({
+  on_attach = on_attach,
+  settings = {},
+  capabilities = capabilities,
+})
 
 lspconfig.ocamllsp.setup({
   on_attach = on_attach,
