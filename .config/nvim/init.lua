@@ -52,7 +52,7 @@ key_mapper('', '<right>', '<nop>')
 -- key_mapper('v', 'jK', '<ESC>')
 key_mapper('n', '<F6>', ':vsp ~/.config/nvim/init.lua<CR>')
 key_mapper('n', '<F7>', ':so %<CR>')
-key_mapper('n', '<F8>', ':NERDTreeToggle<CR>')
+key_mapper('n', '<F8>', ':NERDTreeFind<CR>')
 key_mapper('n', '<F9>', ':vsp ~/.config/nvim/lua/plugins.lua<CR>')
 -- key_mapper('i', '<C-space>', '<C-x><C-o>')
 -- key_mapper('t', '<ESC>', '<c-\><c-n>')
@@ -94,9 +94,15 @@ require'nvim-treesitter.configs'.setup {
 -- lsp setup
 --
 -- lsp autocomplete
---
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+-- local capabilities = vim.lsp.protocol.make_client_capabilities()
+-- capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+-- adding foldingRange to capabilities
+capabilities.textDocument.foldingRange = {
+  dynamicRegistration = false,
+  lineFoldingOnly = true
+}
 
 require("nvim-lsp-installer").setup {}
 
@@ -117,6 +123,9 @@ local on_attach = function(client, bufnr)
   local bufopts = { noremap=true, silent=true, buffer=bufnr }
   vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
   vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
+  vim.keymap.set('n', 'gtt', ":tab split<cr>:lua vim.lsp.buf.definition()<cr>", bufopts)
+  vim.keymap.set('n', 'gs', ":sp<cr>:lua vim.lsp.buf.definition()<cr>", bufopts)
+  vim.keymap.set('n', 'gv', ":vsp<cr>:lua vim.lsp.buf.definition()<cr>", bufopts)
   vim.keymap.set('n', 'gw', vim.lsp.buf.document_symbol, bufopts)
   vim.keymap.set('n', 'gW', vim.lsp.buf.workspace_symbol, bufopts)
   vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
@@ -149,6 +158,11 @@ lspconfig.hls.setup({
   capabilities = capabilities,
 })
 
+vim.cmd [[
+  au BufRead,BufNewFile *.mf set filetype=ocaml
+  au BufRead,BufNewFile *.mfi set filetype=ocaml
+]]
+
 lspconfig.ocamllsp.setup({
   on_attach = on_attach,
   cmd = { "ocamllsp" },
@@ -161,6 +175,8 @@ lspconfig.clangd.setup({
   cmd= {"clangd"},
   capabilities = capabilities,
 })
+
+
 
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
   vim.lsp.diagnostic.on_publish_diagnostics, {
@@ -255,6 +271,8 @@ key_mapper('n', '<leader>fw', ':Telescope grep_string<CR>')
 key_mapper('n', '<leader>fg', ':Telescope live_grep<CR>')
 key_mapper('n', '<leader>fb', ':Telescope buffers<CR>')
 key_mapper('n', '<leader>fh', ':Telescope help_tags<CR>')
+key_mapper('n', 't', ':Telescope<CR>')
+
 
 key_mapper('n', '<F12>',  '<Plug>(Luadev-RunLine)')
 
@@ -266,3 +284,97 @@ require('litee.calltree').setup({})
 -- symbol tree
 require('litee.symboltree').setup({})
 
+local neogit = require("neogit")
+
+-- require("neogit").setup {
+--   disable_signs = false,
+--   disable_hint = false,
+--   disable_context_highlighting = false,
+--   disable_commit_confirmation = false,
+--   -- Neogit refreshes its internal state after specific events, which can be expensive depending on the repository size. 
+--   -- Disabling `auto_refresh` will make it so you have to manually refresh the status after you open it.
+--   auto_refresh = true,
+--   disable_builtin_notifications = false,
+--   use_magit_keybindings = false,
+--   -- Change the default way of opening neogit
+--   kind = "tab",
+--   -- Change the default way of opening the commit popup
+--   commit_popup = {
+--     kind = "split",
+--   },
+--   -- Change the default way of opening popups
+--   popup = {
+--     kind = "split",
+--   },
+--   -- customize displayed signs
+--   signs = {
+--     -- { CLOSED, OPENED }
+--     section = { ">", "v" },
+--     item = { ">", "v" },
+--     hunk = { "", "" },
+--   },
+--   integrations = {
+--     -- Neogit only provides inline diffs. If you want a more traditional way to look at diffs, you can use `sindrets/diffview.nvim`.
+--     -- The diffview integration enables the diff popup, which is a wrapper around `sindrets/diffview.nvim`.
+--     --
+--     -- Requires you to have `sindrets/diffview.nvim` installed.
+--     -- use { 
+--     --   'TimUntersberger/neogit', 
+--     --   requires = { 
+--     --     'nvim-lua/plenary.nvim',
+--     --     'sindrets/diffview.nvim' 
+--     --   }
+--     -- }
+--     --
+--     diffview = false  
+--   },
+--   -- Setting any section to `false` will make the section not render at all
+--   sections = {
+--     untracked = {
+--       folded = false
+--     },
+--     unstaged = {
+--       folded = false
+--     },
+--     staged = {
+--       folded = false
+--     },
+--     stashes = {
+--       folded = true
+--     },
+--     unpulled = {
+--       folded = true
+--     },
+--     unmerged = {
+--       folded = false
+--     },
+--     recent = {
+--       folded = true
+--     },
+--   },
+--   -- override/add mappings
+--   mappings = {
+--     -- modify status buffer mappings
+--     status = {
+--       -- Adds a mapping with "B" as key that does the "BranchPopup" command
+--       ["B"] = "BranchPopup",
+--       -- Removes the default mapping of "s"
+--       ["s"] = "",
+--     }
+--   }
+-- }
+
+-- folding based on zR zM
+vim.o.foldcolumn = '1'
+vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
+vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
+vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+
+-- require('ufo').setup()
+
+vim.g.oscyank_max_length = 10000000
+
+vim.keymap.set('n', '<F5>', ':redir @" | silent map | redir END | new | put!<CR>')

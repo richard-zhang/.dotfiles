@@ -16,14 +16,12 @@ return require('packer').startup(function()
   -- use "tjdevries/colorbuddy.nvim"
   -- use "tjdevries/gruvbuddy.nvim"
   use "tomasiser/vim-code-dark"
-  use "Olical/conjure"
   use {
         "nvim-telescope/telescope.nvim",
         requires = { {'nvim-lua/plenary.nvim'} }
   }
   use {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' }
   use "bfredl/nvim-luadev"
-  use { "catppuccin/nvim", as = "catppuccin" }
   use { "ray-x/lsp_signature.nvim" }
   use {
     'nmac427/guess-indent.nvim',
@@ -53,4 +51,10 @@ return require('packer').startup(function()
   })
 
   use 'godlygeek/tabular'
+  use 'APZelos/blamer.nvim'
+  use 'TimUntersberger/neogit'
+  use 'sindrets/diffview.nvim'
+  use {'kevinhwang91/nvim-ufo', requires = 'kevinhwang91/promise-async'}
+  use 'ojroques/vim-oscyank'
+  use 'mogelbrod/vim-jsonpath'
 end)
