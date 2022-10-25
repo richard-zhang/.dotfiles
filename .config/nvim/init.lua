@@ -174,6 +174,13 @@ lspconfig.clangd.setup({
   on_attach = on_attach,
   cmd= {"clangd"},
   capabilities = capabilities,
+  init_options = {
+    clangdFileStatus = true,
+    -- This helps clangd parse includes from dependencies
+    fallbackFlags = {
+      '-std=c++20'
+    }
+  }
 })
 
 
@@ -258,12 +265,18 @@ require('telescope').setup {
       override_file_sorter = true,     -- override the file sorter
       case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
                                        -- the default case_mode is "smart_case"
+    },
+    media_files = {
+      -- filetypes whitelist
+      -- defaults to {"png", "jpg", "mp4", "webm", "pdf"}
+      filetypes = {"png", "webm", "jpg", "jpeg", "svg", "pdf", "mp4"},
     }
   }
 }
 -- To get fzf loaded and working with telescope, you need to call
 -- load_extension, somewhere after setup function:
 require('telescope').load_extension('fzf')
+require('telescope').load_extension('media_files')
 
 key_mapper('n', '<c-p>', ':Telescope git_files<CR>')
 key_mapper('n', '<leader>ff', ':Telescope find_files<CR>')
@@ -273,6 +286,9 @@ key_mapper('n', '<leader>fb', ':Telescope buffers<CR>')
 key_mapper('n', '<leader>fh', ':Telescope help_tags<CR>')
 key_mapper('n', 't', ':Telescope<CR>')
 
+
+key_mapper('n', '<space>s', '<Plug>OCamlSwitchEdit')
+key_mapper('n', '<space>S', '<Plug>OCamlSwitchNewWin')
 
 key_mapper('n', '<F12>',  '<Plug>(Luadev-RunLine)')
 

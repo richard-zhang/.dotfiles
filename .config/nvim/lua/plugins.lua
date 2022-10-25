@@ -57,4 +57,6 @@ return require('packer').startup(function()
   use {'kevinhwang91/nvim-ufo', requires = 'kevinhwang91/promise-async'}
   use 'ojroques/vim-oscyank'
   use 'mogelbrod/vim-jsonpath'
+  use 'ocaml/vim-ocaml'
+  use 'nvim-telescope/telescope-media-files.nvim'
 end)
