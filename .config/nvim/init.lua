@@ -286,9 +286,13 @@ key_mapper('n', '<leader>fb', ':Telescope buffers<CR>')
 key_mapper('n', '<leader>fh', ':Telescope help_tags<CR>')
 key_mapper('n', 't', ':Telescope<CR>')
 
-
+vim.cmd [[
+  autocmd FileType ocaml noremap <buffer><silent><space>o <Plug>OCamlSwitchEdit
+  autocmd FileType ocaml noremap <buffer><silent><space>O <Plug>OCamlSwitchNewWin
+]]
 key_mapper('n', '<space>s', '<Plug>OCamlSwitchEdit')
 key_mapper('n', '<space>S', '<Plug>OCamlSwitchNewWin')
+
 
 key_mapper('n', '<F12>',  '<Plug>(Luadev-RunLine)')
 
